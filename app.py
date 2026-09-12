@@ -24,286 +24,129 @@ st.markdown(
     """
     <style>
 
-    /* =====================================================
-       GLOBAL
-       ===================================================== */
-
+    /* Main application */
     .stApp {
-        background: #e9eef3;
+        background: #f5f7fb;
     }
 
+    /* Main content width */
     .block-container {
         max-width: 1100px;
         padding-top: 2rem;
-        padding-bottom: 2.5rem;
+        padding-bottom: 3rem;
     }
 
-    /* =====================================================
-       TYPOGRAPHY
-       ===================================================== */
-
-    html,
-    body,
-    [class*="css"] {
-        font-family:
-            "Inter",
-            "Segoe UI",
-            Roboto,
-            Helvetica,
-            Arial,
-            sans-serif;
-    }
-
-    /* =====================================================
-       HERO
-       ===================================================== */
-
+    /* Hero section */
     .hero {
         background: linear-gradient(
             135deg,
-            #0d4352 0%,
-            #155f76 55%,
-            #197d96 100%
+            #0f4c5c 0%,
+            #176b87 55%,
+            #1b8ca8 100%
         );
-
-        padding: 1.8rem 2.2rem;
+        padding: 2.2rem 2.5rem;
         border-radius: 18px;
         color: white;
-        margin-bottom: 1.5rem;
-
-        box-shadow:
-            0 8px 22px rgba(15, 76, 92, 0.20);
+        margin-bottom: 1.8rem;
+        box-shadow: 0 8px 24px rgba(15, 76, 92, 0.18);
     }
 
     .hero-title {
-        font-family:
-            "Trebuchet MS",
-            "Segoe UI",
-            sans-serif;
-
-        font-size: 2.15rem;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        margin: 0;
+        font-size: 2.2rem;
+        font-weight: 750;
+        margin-bottom: 0.35rem;
     }
 
     .hero-subtitle {
-        display: none;
+        font-size: 1rem;
+        opacity: 0.92;
+        line-height: 1.6;
     }
 
-    /* =====================================================
-       SECTION HEADINGS
-       ===================================================== */
-
+    /* Section headings */
     .section-title {
-        color: #173f50;
-
-        font-family:
-            "Trebuchet MS",
-            "Segoe UI",
-            sans-serif;
-
-        font-size: 1.28rem;
-        font-weight: 750;
-
-        letter-spacing: -0.015em;
-
-        margin-top: 0.55rem;
-        margin-bottom: 0.45rem;
+        color: #163a4a;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-top: 0.8rem;
+        margin-bottom: 0.7rem;
     }
 
-    /* =====================================================
-       INPUT CARDS
-       ===================================================== */
-
+    /* Input cards */
     .input-card {
-        background: #ffffff;
-
-        border: 1px solid #d6e0e7;
-        border-radius: 14px;
-
-        padding: 1rem 1.15rem;
-
-        min-height: 0;
-
-        box-shadow:
-            0 3px 10px rgba(15, 23, 42, 0.055);
-
-        transition:
-            transform 0.18s ease,
-            box-shadow 0.18s ease;
-    }
-
-    .input-card:hover {
-        transform: translateY(-2px);
-
-        box-shadow:
-            0 7px 18px rgba(15, 23, 42, 0.09);
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 1.3rem;
+        min-height: 190px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
     }
 
     .card-title {
-        color: #173f50;
-
-        font-family:
-            "Trebuchet MS",
-            "Segoe UI",
-            sans-serif;
-
-        font-size: 1.04rem;
-        font-weight: 750;
-
-        margin-bottom: 0.25rem;
+        color: #163a4a;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 0.45rem;
     }
 
     .card-description {
         color: #64748b;
-
-        font-size: 0.86rem;
-
-        line-height: 1.45;
-
-        margin-bottom: 0;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 1rem;
     }
 
-    /* =====================================================
-       STREAMLIT INPUT LABELS
-       ===================================================== */
-
-    label {
-        font-weight: 600 !important;
-        color: #334155 !important;
-    }
-
-    /* =====================================================
-       AUDIO PREVIEW
-       ===================================================== */
-
-    .audio-preview-title {
-        color: #173f50;
-
-        font-family:
-            "Trebuchet MS",
-            "Segoe UI",
-            sans-serif;
-
-        font-size: 1.05rem;
-        font-weight: 700;
-
-        margin-top: 1.1rem;
-        margin-bottom: 0.35rem;
-    }
-
-    /* =====================================================
-       RESULT CARD
-       ===================================================== */
-
+    /* Result card */
     .result-card {
-        background: #ffffff;
-
-        border: 1px solid #d5e1e8;
+        background: white;
+        border: 1px solid #d9e3ea;
         border-radius: 15px;
-
-        padding: 1.25rem;
-
-        margin-top: 1rem;
-
-        box-shadow:
-            0 5px 17px rgba(15, 23, 42, 0.07);
+        padding: 1.5rem;
+        margin-top: 1.2rem;
+        box-shadow: 0 5px 18px rgba(15, 23, 42, 0.06);
     }
 
     .result-label {
         color: #64748b;
-
-        font-size: 0.76rem;
-        font-weight: 700;
-
+        font-size: 0.82rem;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.07em;
+        letter-spacing: 0.04em;
     }
 
     .transcription-text {
-        background: #f4f8fa;
-
-        border-left: 4px solid #19829b;
-
+        background: #f8fafc;
+        border-left: 4px solid #1b8ca8;
         border-radius: 8px;
-
-        padding: 1rem;
-
-        margin-top: 0.55rem;
-
+        padding: 1.15rem;
+        margin-top: 0.7rem;
         color: #1e293b;
-
-        font-size: 1.02rem;
-
-        line-height: 1.85;
-
+        font-size: 1.05rem;
+        line-height: 1.8;
         direction: auto;
-
-        box-shadow:
-            inset 0 0 0 1px rgba(15, 76, 92, 0.04);
     }
 
-    /* =====================================================
-       BUTTONS
-       ===================================================== */
-
-    div.stButton > button {
-        border-radius: 9px;
-
-        font-family:
-            "Segoe UI",
-            sans-serif;
-
-        font-weight: 700;
-
-        min-height: 2.65rem;
-
-        transition:
-            transform 0.15s ease,
-            box-shadow 0.15s ease;
-    }
-
-    div.stButton > button:hover {
-        transform: translateY(-1px);
-
-        box-shadow:
-            0 5px 12px rgba(15, 76, 92, 0.15);
-    }
-
-    div.stDownloadButton > button {
-        border-radius: 9px;
-
-        font-weight: 700;
-
-        min-height: 2.55rem;
-    }
-
-    /* =====================================================
-       STATUS MESSAGES
-       ===================================================== */
-
-    div[data-testid="stAlert"] {
-        border-radius: 10px;
-    }
-
-    /* =====================================================
-       FOOTER
-       ===================================================== */
-
+    /* Footer */
     .footer {
         text-align: center;
+        color: #94a3b8;
+        font-size: 0.82rem;
+        margin-top: 2.5rem;
+        padding-top: 1.2rem;
+        border-top: 1px solid #e2e8f0;
+    }
 
-        color: #718096;
+    /* Primary buttons */
+    div.stButton > button {
+        border-radius: 9px;
+        font-weight: 650;
+        min-height: 2.7rem;
+    }
 
-        font-size: 0.78rem;
-
-        margin-top: 2.2rem;
-        padding-top: 1rem;
-
-        border-top: 1px solid #cfd9e1;
-
-        line-height: 1.6;
+    /* Download button */
+    div.stDownloadButton > button {
+        border-radius: 9px;
+        font-weight: 650;
     }
 
     </style>
@@ -322,6 +165,12 @@ st.markdown(
         <div class="hero-title">
             🎙️ CivicAgent PK
         </div>
+        <div class="hero-subtitle">
+            Voice-to-Text Complaint Module<br>
+            Convert citizen voice complaints in Urdu, English,
+            or mixed speech into usable text for the CivicAgent
+            workflow.
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -329,7 +178,7 @@ st.markdown(
 
 
 # ---------------------------------------------------------
-# Submit complaint section
+# Introduction
 # ---------------------------------------------------------
 
 st.markdown(
@@ -341,6 +190,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.caption(
+    "Record a new complaint or upload an existing voice note. "
+    "No language selection is required."
+)
+
 
 # ---------------------------------------------------------
 # Input methods
@@ -350,14 +204,12 @@ col1, col2 = st.columns(2, gap="large")
 
 
 with col1:
-
     st.markdown(
         """
         <div class="input-card">
             <div class="card-title">
                 🎙️ Record Complaint
             </div>
-
             <div class="card-description">
                 Record a citizen complaint directly through your
                 device microphone.
@@ -375,14 +227,12 @@ with col1:
 
 
 with col2:
-
     st.markdown(
         """
         <div class="input-card">
             <div class="card-title">
                 📁 Upload Voice Note
             </div>
-
             <div class="card-description">
                 Upload an existing audio recording in MP3, WAV,
                 M4A, or WEBM format.
@@ -403,15 +253,9 @@ with col2:
 # Select input
 # ---------------------------------------------------------
 
-audio_input = (
-    recorded_audio
-    if recorded_audio is not None
-    else uploaded_audio
-)
-
+audio_input = recorded_audio if recorded_audio is not None else uploaded_audio
 
 if recorded_audio is not None and uploaded_audio is not None:
-
     st.info(
         "Both recording and upload were provided. "
         "The recorded audio will be used."
@@ -426,7 +270,7 @@ if audio_input is not None:
 
     st.markdown(
         """
-        <div class="audio-preview-title">
+        <div class="section-title">
             Audio Preview
         </div>
         """,
@@ -441,9 +285,7 @@ if audio_input is not None:
         "recording.wav",
     )
 
-    st.caption(
-        f"Selected file: {filename}"
-    )
+    st.caption(f"Selected file: {filename}")
 
 
 # ---------------------------------------------------------
@@ -466,7 +308,6 @@ transcribe_clicked = st.button(
 if transcribe_clicked:
 
     if audio_input is None:
-
         st.warning(
             "Please record a complaint or upload an audio file first."
         )
@@ -478,7 +319,6 @@ if transcribe_clicked:
         )
 
         if not is_valid:
-
             st.error(validation_error)
 
         else:
@@ -486,10 +326,7 @@ if transcribe_clicked:
             with st.spinner(
                 "Transcribing audio with Whisper Large V3..."
             ):
-
-                result = transcribe_audio(
-                    audio_input
-                )
+                result = transcribe_audio(audio_input)
 
             if result["success"]:
 
@@ -507,40 +344,23 @@ if transcribe_clicked:
                 meta_col1, meta_col2 = st.columns(2)
 
                 with meta_col1:
-
                     st.markdown(
-                        """
-                        <div class="result-label">
-                            Language
-                        </div>
-                        """,
+                        '<div class="result-label">Language</div>',
                         unsafe_allow_html=True,
                     )
-
                     st.write(
-                        result["language"]
-                        or "Auto-detected"
+                        result["language"] or "Auto-detected"
                     )
 
                 with meta_col2:
-
                     st.markdown(
-                        """
-                        <div class="result-label">
-                            Source
-                        </div>
-                        """,
+                        '<div class="result-label">Source</div>',
                         unsafe_allow_html=True,
                     )
-
                     st.write("Voice")
 
                 st.markdown(
-                    """
-                    <div class="result-label">
-                        Transcription
-                    </div>
-                    """,
+                    '<div class="result-label">Transcription</div>',
                     unsafe_allow_html=True,
                 )
 
@@ -553,10 +373,7 @@ if transcribe_clicked:
                     unsafe_allow_html=True,
                 )
 
-                st.markdown(
-                    "</div>",
-                    unsafe_allow_html=True,
-                )
+                st.markdown("</div>", unsafe_allow_html=True)
 
                 st.download_button(
                     label="⬇️ Download Transcription",
@@ -573,10 +390,7 @@ if transcribe_clicked:
                 )
 
                 if result["error"]:
-
-                    st.warning(
-                        result["error"]
-                    )
+                    st.warning(result["error"])
 
 
 # ---------------------------------------------------------
