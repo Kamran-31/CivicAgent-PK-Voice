@@ -26,7 +26,7 @@ st.markdown(
 
     /* Main application */
     .stApp {
-        background: #f5f7fb;
+        background: #eef2f6;
     }
 
     /* Main content width */
