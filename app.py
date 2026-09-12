@@ -468,7 +468,6 @@ with col1:
             <div class="card-title">
                 🎙️ Record Complaint
             </div>
-
             <div class="card-description">
                 Record a complaint directly through your
                 device microphone.
@@ -493,10 +492,9 @@ with col2:
             <div class="card-title">
                 📁 Upload Voice Note
             </div>
-
             <div class="card-description">
-                Upload an existing audio recording in MP3,
-                WAV, M4A, or WEBM format.
+                Upload an existing audio recording in MP3, WAV,
+                M4A, or WEBM format.
             </div>
         </div>
         """,
