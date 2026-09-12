@@ -1,32 +1,17 @@
 import re
 from typing import Any, Dict
 
-from groq import Groq
+from groq import (
+    APIConnectionError,
+    APIStatusError,
+    APITimeoutError,
+    AuthenticationError,
+    BadRequestError,
+    Groq,
+    RateLimitError,
+)
 
 from config import GROQ_API_KEY, MODEL_NAME
-
-
-# ---------------------------------------------------------
-# Language labels
-# ---------------------------------------------------------
-
-def _detect_language_label(language_code: str | None) -> str:
-    """
-    Convert Whisper language codes into user-friendly labels.
-    """
-
-    language_map = {
-        "ur": "Urdu",
-        "en": "English",
-    }
-
-    if not language_code:
-        return "Unknown"
-
-    return language_map.get(
-        language_code.lower(),
-        language_code.upper(),
-    )
 
 
 # ---------------------------------------------------------
@@ -70,85 +55,16 @@ def _latin_character_count(text: str) -> int:
 # ---------------------------------------------------------
 
 ENGLISH_WORDS = {
-    "a",
-    "about",
-    "after",
-    "again",
-    "all",
-    "am",
-    "an",
-    "and",
-    "are",
-    "as",
-    "at",
-    "be",
-    "been",
-    "before",
-    "but",
-    "by",
-    "can",
-    "could",
-    "did",
-    "do",
-    "does",
-    "for",
-    "from",
-    "get",
-    "go",
-    "good",
-    "have",
-    "he",
-    "hello",
-    "help",
-    "her",
-    "here",
-    "how",
-    "i",
-    "if",
-    "in",
-    "is",
-    "it",
-    "its",
-    "just",
-    "know",
-    "like",
-    "me",
-    "my",
-    "need",
-    "no",
-    "not",
-    "of",
-    "on",
-    "or",
-    "our",
-    "please",
-    "problem",
-    "report",
-    "she",
-    "so",
-    "some",
-    "that",
-    "the",
-    "their",
-    "there",
-    "they",
-    "this",
-    "to",
-    "was",
-    "we",
-    "were",
-    "what",
-    "when",
-    "where",
-    "which",
-    "who",
-    "why",
-    "will",
-    "with",
-    "would",
-    "yes",
-    "you",
-    "your",
+    "a", "about", "after", "again", "all", "am", "an", "and",
+    "are", "as", "at", "be", "been", "before", "but", "by",
+    "can", "could", "did", "do", "does", "for", "from", "get",
+    "go", "good", "have", "he", "hello", "help", "her", "here",
+    "how", "i", "if", "in", "is", "it", "its", "just", "know",
+    "like", "me", "my", "need", "no", "not", "of", "on", "or",
+    "our", "please", "problem", "report", "she", "so", "some",
+    "that", "the", "their", "there", "they", "this", "to",
+    "was", "we", "were", "what", "when", "where", "which",
+    "who", "why", "will", "with", "would", "yes", "you", "your",
 }
 
 
@@ -184,21 +100,13 @@ def _looks_like_english(text: str) -> bool:
 
     score = _english_score(text)
 
-    # Very short sentences.
-    #
-    # Example:
+    # Handles short English phrases such as:
     # "Hello, how are you?"
-    #
-    # hello = English
-    # how   = English
-    # are   = English
-    # you   = English
     if len(words) <= 8 and score >= 2:
         return True
 
-    # Longer English text.
+    # Longer English text
     if len(words) >= 5:
-
         ratio = score / len(words)
 
         if ratio >= 0.45:
@@ -212,71 +120,19 @@ def _looks_like_english(text: str) -> bool:
 # ---------------------------------------------------------
 
 ROMAN_URDU_WORDS = {
-    "mein",
-    "main",
-    "mujhe",
-    "mujhay",
-    "mera",
-    "meri",
-    "mere",
-    "hum",
-    "ham",
-    "aap",
-    "ap",
-    "apka",
-    "apki",
-    "apke",
-    "hai",
-    "hain",
-    "tha",
-    "thi",
-    "the",
-    "ho",
-    "hun",
-    "houn",
-    "kar",
-    "karo",
-    "karen",
-    "karta",
-    "karti",
-    "karte",
-    "raha",
-    "rahi",
-    "rahe",
-    "raha",
-    "nahi",
-    "nahin",
-    "nai",
-    "ka",
-    "ki",
-    "ke",
-    "ko",
-    "se",
-    "par",
-    "pe",
-    "yeh",
-    "yah",
-    "woh",
-    "wo",
-    "kya",
-    "kyun",
-    "kyon",
-    "kab",
-    "kahan",
-    "kidhar",
-    "kaise",
-    "aisa",
-    "aisi",
-    "aisay",
-    "bohat",
-    "bahut",
-    "acha",
-    "achha",
-    "achi",
-    "achhi",
-    "acha",
-    "pani",
-    "paani",
+    "mein", "main", "mujhe", "mujhay", "mera", "meri", "mere",
+    "hum", "ham", "aap", "ap", "apka", "apki", "apke",
+    "hai", "hain", "tha", "thi", "the", "ho", "hun", "houn",
+    "kar", "karo", "karen", "karta", "karti", "karte",
+    "raha", "rahi", "rahe",
+    "nahi", "nahin", "nai",
+    "ka", "ki", "ke", "ko", "se", "par", "pe",
+    "yeh", "yah", "woh", "wo",
+    "kya", "kyun", "kyon", "kab", "kahan", "kidhar", "kaise",
+    "aisa", "aisi", "aisay",
+    "bohat", "bahut",
+    "acha", "achha", "achi", "achhi",
+    "pani", "paani",
     "bijli",
     "masla",
     "shikayat",
@@ -288,7 +144,6 @@ ROMAN_URDU_WORDS = {
     "hospital",
     "awam",
     "log",
-    "mera",
     "hamara",
     "hamari",
     "hamare",
@@ -321,10 +176,6 @@ def _roman_urdu_score(text: str) -> int:
 def _looks_like_roman_urdu(text: str) -> bool:
     """
     Determine whether Latin-script text is likely Roman Urdu.
-
-    Roman Urdu has no single official spelling system, so
-    vocabulary-based detection is used instead of relying
-    entirely on Whisper's language code.
     """
 
     words = re.findall(
@@ -337,13 +188,12 @@ def _looks_like_roman_urdu(text: str) -> bool:
 
     score = _roman_urdu_score(text)
 
-    # Strong signal for short phrases.
+    # Short Roman Urdu phrases
     if len(words) <= 8 and score >= 2:
         return True
 
-    # Longer Roman Urdu.
+    # Longer Roman Urdu text
     if len(words) >= 5:
-
         ratio = score / len(words)
 
         if ratio >= 0.30:
@@ -353,7 +203,7 @@ def _looks_like_roman_urdu(text: str) -> bool:
 
 
 # ---------------------------------------------------------
-# Final language classification
+# Language classification
 # ---------------------------------------------------------
 
 def _classify_transcription_language(
@@ -361,7 +211,7 @@ def _classify_transcription_language(
     whisper_language_code: str | None,
 ) -> str:
     """
-    Classify transcription into the four supported categories:
+    Classify transcription into:
 
         English
         Urdu
@@ -374,9 +224,7 @@ def _classify_transcription_language(
     if not text:
         return "Unknown"
 
-    text = " ".join(
-        text.split()
-    )
+    text = " ".join(text.split())
 
     urdu_count = _urdu_character_count(text)
     latin_count = _latin_character_count(text)
@@ -393,8 +241,7 @@ def _classify_transcription_language(
         if urdu_count >= 3 and latin_count >= 3:
             return "Urdu + English"
 
-        if urdu_count > 0:
-            return "Urdu"
+        return "Urdu"
 
     # -----------------------------------------------------
     # Urdu
@@ -412,12 +259,10 @@ def _classify_transcription_language(
         roman_urdu = _looks_like_roman_urdu(text)
         english = _looks_like_english(text)
 
-        # If both appear possible, use Whisper as an
-        # additional signal.
+        # Both English and Roman Urdu signals
         if roman_urdu and english:
 
             if whisper_language_code:
-
                 code = whisper_language_code.lower()
 
                 if code == "en":
@@ -446,10 +291,68 @@ def _classify_transcription_language(
             return "English"
 
     # -----------------------------------------------------
-    # Unsupported language
+    # Unsupported
     # -----------------------------------------------------
 
     return "Unsupported"
+
+
+# ---------------------------------------------------------
+# Groq error handling
+# ---------------------------------------------------------
+
+def _handle_groq_error(exc: Exception) -> str:
+    """
+    Convert Groq/API exceptions into safe user-friendly messages.
+    """
+
+    if isinstance(exc, AuthenticationError):
+        return (
+            "Groq authentication failed. "
+            "Please check the configured API key."
+        )
+
+    if isinstance(exc, RateLimitError):
+        return (
+            "Groq API rate limit reached. "
+            "Please wait a moment and try again."
+        )
+
+    if isinstance(exc, APITimeoutError):
+        return (
+            "The transcription service timed out. "
+            "Please try again."
+        )
+
+    if isinstance(exc, APIConnectionError):
+        return (
+            "Could not connect to the Groq transcription service. "
+            "Please check your internet connection and try again."
+        )
+
+    if isinstance(exc, BadRequestError):
+        return (
+            "The audio request could not be processed. "
+            "Please try a supported audio file."
+        )
+
+    if isinstance(exc, APIStatusError):
+
+        if getattr(exc, "status_code", 0) >= 500:
+            return (
+                "The transcription service is temporarily unavailable. "
+                "Please try again later."
+            )
+
+        return (
+            "The transcription service returned an error. "
+            "Please try again."
+        )
+
+    return (
+        "An unexpected error occurred while processing "
+        "the transcription. Please try again."
+    )
 
 
 # ---------------------------------------------------------
@@ -458,8 +361,8 @@ def _classify_transcription_language(
 
 def transcribe_audio(uploaded_file) -> Dict[str, Any]:
     """
-    Transcribe an uploaded/recorded audio file using
-    Groq's Whisper Large V3 model.
+    Transcribe an uploaded or recorded audio file using
+    Groq Whisper Large V3.
 
     Supported languages:
 
@@ -467,8 +370,6 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         Urdu
         Roman Urdu
         Urdu + English
-
-    Other languages are rejected.
     """
 
     filename = getattr(
@@ -495,7 +396,31 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
 
         base_result["error"] = (
             "Groq API key is not configured. "
-            "Please add GROQ_API_KEY to Streamlit Secrets."
+            "Please configure GROQ_API_KEY in Streamlit Secrets."
+        )
+
+        return base_result
+
+    # -----------------------------------------------------
+    # Validate uploaded file
+    # -----------------------------------------------------
+
+    try:
+        file_bytes = uploaded_file.getvalue()
+
+    except Exception:
+        base_result["error"] = (
+            "The audio file could not be read. "
+            "Please upload or record the audio again."
+        )
+
+        return base_result
+
+    if not file_bytes:
+
+        base_result["error"] = (
+            "The audio file is empty. "
+            "Please record or upload audio containing speech."
         )
 
         return base_result
@@ -513,8 +438,6 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         # -------------------------------------------------
         # Audio
         # -------------------------------------------------
-
-        file_bytes = uploaded_file.getvalue()
 
         file_tuple = (
             filename,
@@ -549,17 +472,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Whisper language
-        # -------------------------------------------------
-
-        language_code = getattr(
-            transcription,
-            "language",
-            None,
-        )
-
-        # -------------------------------------------------
-        # Empty audio
+        # Empty transcription
         # -------------------------------------------------
 
         if not text:
@@ -571,7 +484,17 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
             return base_result
 
         # -------------------------------------------------
-        # Language classification
+        # Whisper language
+        # -------------------------------------------------
+
+        language_code = getattr(
+            transcription,
+            "language",
+            None,
+        )
+
+        # -------------------------------------------------
+        # Final language classification
         # -------------------------------------------------
 
         final_language = (
@@ -582,10 +505,13 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Reject unsupported languages
+        # Unsupported language
         # -------------------------------------------------
 
         if final_language == "Unsupported":
+
+            base_result["text"] = text
+            base_result["language_code"] = language_code
 
             base_result["error"] = (
                 "Unsupported language detected. "
@@ -593,8 +519,18 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
                 "English, Urdu, Roman Urdu, and Urdu + English."
             )
 
-            base_result["text"] = text
-            base_result["language_code"] = language_code
+            return base_result
+
+        # -------------------------------------------------
+        # Unknown language
+        # -------------------------------------------------
+
+        if final_language == "Unknown":
+
+            base_result["error"] = (
+                "The language of the audio could not be determined. "
+                "Please try recording the complaint again."
+            )
 
             return base_result
 
@@ -614,21 +550,31 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         return base_result
 
     # -----------------------------------------------------
-    # Error handling
+    # Groq/API errors
     # -----------------------------------------------------
 
-    except Exception as exc:
+    except (
+        AuthenticationError,
+        RateLimitError,
+        APITimeoutError,
+        APIConnectionError,
+        BadRequestError,
+        APIStatusError,
+    ) as exc:
 
-        error_message = str(
-            exc
-        ).strip()
+        base_result["error"] = _handle_groq_error(exc)
 
-        if not error_message:
+        return base_result
 
-            error_message = (
-                "An unexpected transcription error occurred."
-            )
+    # -----------------------------------------------------
+    # Unexpected errors
+    # -----------------------------------------------------
 
-        base_result["error"] = error_message
+    except Exception:
+
+        base_result["error"] = (
+            "An unexpected error occurred while processing "
+            "the audio. Please try again."
+        )
 
         return base_result
