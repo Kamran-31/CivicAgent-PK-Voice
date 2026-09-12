@@ -167,9 +167,6 @@ st.markdown(
         </div>
         <div class="hero-subtitle">
             Voice-to-Text Complaint Module<br>
-            Convert citizen voice complaints in Urdu, English,
-            or mixed speech into usable text for the CivicAgent
-            workflow.
         </div>
     </div>
     """,
@@ -192,7 +189,6 @@ st.markdown(
 
 st.caption(
     "Record a new complaint or upload an existing voice note. "
-    "No language selection is required."
 )
 
 
@@ -211,7 +207,7 @@ with col1:
                 🎙️ Record Complaint
             </div>
             <div class="card-description">
-                Record a citizen complaint directly through your
+                Record a complaint directly through your
                 device microphone.
             </div>
         </div>
