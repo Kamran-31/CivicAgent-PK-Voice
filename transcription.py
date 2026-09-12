@@ -1,7 +1,5 @@
-from pathlib import Path
-from typing import Any, Dict
-
 import re
+from typing import Any, Dict
 
 from groq import Groq
 
@@ -20,11 +18,10 @@ def _detect_language_label(language_code: str | None) -> str:
     language_map = {
         "ur": "Urdu",
         "en": "English",
-        "tl": "Tagalog",
     }
 
     if not language_code:
-        return "Auto-detected"
+        return "Unknown"
 
     return language_map.get(
         language_code.lower(),
@@ -33,28 +30,12 @@ def _detect_language_label(language_code: str | None) -> str:
 
 
 # ---------------------------------------------------------
-# Urdu text detection
+# Urdu script detection
 # ---------------------------------------------------------
-
-def _contains_urdu_script(text: str) -> bool:
-    """
-    Detect whether the transcription contains Urdu/Arabic-script
-    characters commonly used in Urdu.
-    """
-
-    if not text:
-        return False
-
-    urdu_pattern = re.compile(
-        r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]"
-    )
-
-    return bool(urdu_pattern.search(text))
-
 
 def _urdu_character_count(text: str) -> int:
     """
-    Count Urdu/Arabic-script characters in the text.
+    Count Urdu/Arabic-script characters.
     """
 
     if not text:
@@ -85,7 +66,7 @@ def _latin_character_count(text: str) -> int:
 
 
 # ---------------------------------------------------------
-# English text detection
+# English detection
 # ---------------------------------------------------------
 
 ENGLISH_WORDS = {
@@ -171,21 +152,15 @@ ENGLISH_WORDS = {
 }
 
 
-def _english_word_score(text: str) -> int:
+def _english_score(text: str) -> int:
     """
-    Calculate a simple English vocabulary score.
-
-    This is intentionally lightweight and does not require
-    another API call.
+    Count recognizable English words.
     """
 
     words = re.findall(
         r"[A-Za-z]+",
         text.lower(),
     )
-
-    if not words:
-        return 0
 
     return sum(
         1
@@ -196,15 +171,8 @@ def _english_word_score(text: str) -> int:
 
 def _looks_like_english(text: str) -> bool:
     """
-    Determine whether Latin-script transcription strongly
-    resembles English.
-
-    This is especially useful for short phrases where Whisper
-    may incorrectly identify the spoken language.
+    Determine whether text is likely English.
     """
-
-    if not text:
-        return False
 
     words = re.findall(
         r"[A-Za-z]+",
@@ -214,27 +182,178 @@ def _looks_like_english(text: str) -> bool:
     if not words:
         return False
 
-    english_score = _english_word_score(text)
+    score = _english_score(text)
 
-    # Very strong signal:
-    # one or more recognizable English words in a short sentence.
-    if len(words) <= 8 and english_score >= 2:
+    # Very short sentences.
+    #
+    # Example:
+    # "Hello, how are you?"
+    #
+    # hello = English
+    # how   = English
+    # are   = English
+    # you   = English
+    if len(words) <= 8 and score >= 2:
         return True
 
-    # For longer text, require a reasonable percentage
-    # of recognizable English words.
+    # Longer English text.
     if len(words) >= 5:
 
-        english_ratio = english_score / len(words)
+        ratio = score / len(words)
 
-        if english_ratio >= 0.45:
+        if ratio >= 0.45:
             return True
 
     return False
 
 
 # ---------------------------------------------------------
-# Language classification
+# Roman Urdu detection
+# ---------------------------------------------------------
+
+ROMAN_URDU_WORDS = {
+    "mein",
+    "main",
+    "mujhe",
+    "mujhay",
+    "mera",
+    "meri",
+    "mere",
+    "hum",
+    "ham",
+    "aap",
+    "ap",
+    "apka",
+    "apki",
+    "apke",
+    "hai",
+    "hain",
+    "tha",
+    "thi",
+    "the",
+    "ho",
+    "hun",
+    "houn",
+    "kar",
+    "karo",
+    "karen",
+    "karta",
+    "karti",
+    "karte",
+    "raha",
+    "rahi",
+    "rahe",
+    "raha",
+    "nahi",
+    "nahin",
+    "nai",
+    "ka",
+    "ki",
+    "ke",
+    "ko",
+    "se",
+    "par",
+    "pe",
+    "yeh",
+    "yah",
+    "woh",
+    "wo",
+    "kya",
+    "kyun",
+    "kyon",
+    "kab",
+    "kahan",
+    "kidhar",
+    "kaise",
+    "aisa",
+    "aisi",
+    "aisay",
+    "bohat",
+    "bahut",
+    "acha",
+    "achha",
+    "achi",
+    "achhi",
+    "acha",
+    "pani",
+    "paani",
+    "bijli",
+    "masla",
+    "shikayat",
+    "gali",
+    "sadak",
+    "mohalla",
+    "ghar",
+    "school",
+    "hospital",
+    "awam",
+    "log",
+    "mera",
+    "hamara",
+    "hamari",
+    "hamare",
+    "madad",
+    "chahiye",
+    "chahta",
+    "chahti",
+    "kripya",
+    "please",
+}
+
+
+def _roman_urdu_score(text: str) -> int:
+    """
+    Count common Roman Urdu words.
+    """
+
+    words = re.findall(
+        r"[A-Za-z]+",
+        text.lower(),
+    )
+
+    return sum(
+        1
+        for word in words
+        if word in ROMAN_URDU_WORDS
+    )
+
+
+def _looks_like_roman_urdu(text: str) -> bool:
+    """
+    Determine whether Latin-script text is likely Roman Urdu.
+
+    Roman Urdu has no single official spelling system, so
+    vocabulary-based detection is used instead of relying
+    entirely on Whisper's language code.
+    """
+
+    words = re.findall(
+        r"[A-Za-z]+",
+        text.lower(),
+    )
+
+    if not words:
+        return False
+
+    score = _roman_urdu_score(text)
+
+    # Strong signal for short phrases.
+    if len(words) <= 8 and score >= 2:
+        return True
+
+    # Longer Roman Urdu.
+    if len(words) >= 5:
+
+        ratio = score / len(words)
+
+        if ratio >= 0.30:
+            return True
+
+    return False
+
+
+# ---------------------------------------------------------
+# Final language classification
 # ---------------------------------------------------------
 
 def _classify_transcription_language(
@@ -242,61 +361,75 @@ def _classify_transcription_language(
     whisper_language_code: str | None,
 ) -> str:
     """
-    Determine the final user-facing language label.
+    Classify transcription into the four supported categories:
 
-    Priority:
+        English
+        Urdu
+        Roman Urdu
+        Urdu + English
 
-    1. Urdu script in transcription
-    2. Clear English text
-    3. Mixed Urdu + English
-    4. Whisper language detection
-    5. Auto-detected
+    Any other language is rejected.
     """
 
     if not text:
-        return "Auto-detected"
+        return "Unknown"
 
-    cleaned_text = " ".join(text.split())
-
-    urdu_count = _urdu_character_count(
-        cleaned_text
+    text = " ".join(
+        text.split()
     )
 
-    latin_count = _latin_character_count(
-        cleaned_text
-    )
+    urdu_count = _urdu_character_count(text)
+    latin_count = _latin_character_count(text)
 
-    has_urdu = urdu_count > 0
+    has_urdu_script = urdu_count > 0
     has_latin = latin_count > 0
 
     # -----------------------------------------------------
-    # Mixed Urdu + English
+    # Urdu + English
     # -----------------------------------------------------
 
-    if has_urdu and has_latin:
+    if has_urdu_script and has_latin:
 
-        # If both scripts are meaningfully present,
-        # classify as mixed speech.
         if urdu_count >= 3 and latin_count >= 3:
             return "Urdu + English"
+
+        if urdu_count > 0:
+            return "Urdu"
 
     # -----------------------------------------------------
     # Urdu
     # -----------------------------------------------------
 
-    if has_urdu:
-
+    if has_urdu_script:
         return "Urdu"
 
     # -----------------------------------------------------
-    # English
+    # Latin-script text
     # -----------------------------------------------------
 
-    if has_latin and _looks_like_english(
-        cleaned_text
-    ):
+    if has_latin:
 
-        return "English"
+        roman_urdu = _looks_like_roman_urdu(text)
+        english = _looks_like_english(text)
+
+        # If both appear possible, use Whisper as an
+        # additional signal.
+        if roman_urdu and english:
+
+            if whisper_language_code:
+
+                code = whisper_language_code.lower()
+
+                if code == "en":
+                    return "English"
+
+            return "Roman Urdu"
+
+        if roman_urdu:
+            return "Roman Urdu"
+
+        if english:
+            return "English"
 
     # -----------------------------------------------------
     # Whisper fallback
@@ -304,28 +437,19 @@ def _classify_transcription_language(
 
     if whisper_language_code:
 
-        whisper_code = whisper_language_code.lower()
+        code = whisper_language_code.lower()
 
-        if whisper_code == "ur":
+        if code == "ur":
             return "Urdu"
 
-        if whisper_code == "en":
+        if code == "en":
             return "English"
 
-        # Do NOT expose Tagalog for a CivicAgent PK
-        # Urdu/English voice complaint when the text itself
-        # does not support that classification.
-        #
-        # Instead, fall back to the transcription language
-        # only when Whisper is confident enough to identify
-        # a known language.
-        language_label = _detect_language_label(
-            whisper_code
-        )
+    # -----------------------------------------------------
+    # Unsupported language
+    # -----------------------------------------------------
 
-        return language_label
-
-    return "Auto-detected"
+    return "Unsupported"
 
 
 # ---------------------------------------------------------
@@ -337,18 +461,14 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
     Transcribe an uploaded/recorded audio file using
     Groq's Whisper Large V3 model.
 
-    The input language is intentionally not supplied so that
-    the system can handle Urdu, English, and mixed speech
-    without requiring manual language selection.
+    Supported languages:
 
-    Language detection uses both:
+        English
+        Urdu
+        Roman Urdu
+        Urdu + English
 
-    - Whisper's detected language
-    - Transcribed text analysis
-
-    Text analysis is prioritized for short recordings because
-    Whisper can occasionally misclassify very short English
-    phrases.
+    Other languages are rejected.
     """
 
     filename = getattr(
@@ -368,7 +488,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
     }
 
     # -----------------------------------------------------
-    # API key validation
+    # API key
     # -----------------------------------------------------
 
     if not GROQ_API_KEY:
@@ -391,7 +511,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Read uploaded/recorded audio
+        # Audio
         # -------------------------------------------------
 
         file_bytes = uploaded_file.getvalue()
@@ -402,7 +522,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Whisper transcription
+        # Whisper
         # -------------------------------------------------
 
         transcription = (
@@ -415,7 +535,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Extract transcription text
+        # Text
         # -------------------------------------------------
 
         text = getattr(
@@ -424,8 +544,12 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
             "",
         ) or ""
 
+        text = " ".join(
+            text.split()
+        )
+
         # -------------------------------------------------
-        # Extract Whisper language
+        # Whisper language
         # -------------------------------------------------
 
         language_code = getattr(
@@ -435,15 +559,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Clean transcription
-        # -------------------------------------------------
-
-        text = " ".join(
-            text.split()
-        )
-
-        # -------------------------------------------------
-        # Empty transcription
+        # Empty audio
         # -------------------------------------------------
 
         if not text:
@@ -455,7 +571,7 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
             return base_result
 
         # -------------------------------------------------
-        # Final language classification
+        # Language classification
         # -------------------------------------------------
 
         final_language = (
@@ -466,7 +582,24 @@ def transcribe_audio(uploaded_file) -> Dict[str, Any]:
         )
 
         # -------------------------------------------------
-        # Return result
+        # Reject unsupported languages
+        # -------------------------------------------------
+
+        if final_language == "Unsupported":
+
+            base_result["error"] = (
+                "Unsupported language detected. "
+                "CivicAgent PK currently supports only "
+                "English, Urdu, Roman Urdu, and Urdu + English."
+            )
+
+            base_result["text"] = text
+            base_result["language_code"] = language_code
+
+            return base_result
+
+        # -------------------------------------------------
+        # Success
         # -------------------------------------------------
 
         base_result.update(
