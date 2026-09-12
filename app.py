@@ -78,7 +78,7 @@ st.markdown(
         border: 1px solid #e2e8f0;
         border-radius: 15px;
         padding: 1.3rem;
-        min-height: 160px;
+        min-height: 140px;
         box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
     }
 
