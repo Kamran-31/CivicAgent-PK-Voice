@@ -321,7 +321,6 @@ st.markdown(
     <div class="hero">
         <div class="hero-title">
             🎙️ CivicAgent PK
-            Voice-to-Text Complaint Module
         </div>
     </div>
     """,
@@ -360,7 +359,7 @@ with col1:
             </div>
 
             <div class="card-description">
-                Record a complaint directly through your
+                Record a citizen complaint directly through your
                 device microphone.
             </div>
         </div>
