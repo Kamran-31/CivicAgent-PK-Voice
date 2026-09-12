@@ -265,7 +265,7 @@ def _classify_transcription_language(
             if whisper_language_code:
                 code = whisper_language_code.lower()
 
-                if code == "en":
+                if code.startswith("en"):
                     return "English"
 
             return "Roman Urdu"
@@ -284,10 +284,10 @@ def _classify_transcription_language(
 
         code = whisper_language_code.lower()
 
-        if code == "ur":
+        if code.startswith("ur"):
             return "Urdu"
 
-        if code == "en":
+        if code.startswith("en"):
             return "English"
 
     # -----------------------------------------------------
