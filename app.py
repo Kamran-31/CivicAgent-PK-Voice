@@ -427,9 +427,9 @@ st.markdown(
             🎙️ CivicAgent PK
         </div>
 
-        <div class="hero-subtitle">
+        
             Voice-to-Text Complaint Module
-        </div>
+       
     </div>
     """,
     unsafe_allow_html=True,
