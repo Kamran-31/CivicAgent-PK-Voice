@@ -606,13 +606,13 @@ if transcribe_clicked:
                     "Transcription completed successfully."
                 )
 
-                   st.markdown(
+                st.markdown(
                         '<div class="result-card">'
                             '<div class="result-header">'
                             '📄 Complaint Transcription'
                         '</div>',
                         unsafe_allow_html=True,
-                    )
+                )
 
                 meta_col1, meta_col2 = st.columns(2)
 
